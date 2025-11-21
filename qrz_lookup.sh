@@ -9,6 +9,8 @@
 # Usage       : ./qrz_lookup.sh <callsign> [--csv|--json]
 ###################################################################
 
+# hi
+
 set -euo pipefail
 
 SESSION_FILE="$HOME/.qrz_session"
