@@ -1,16 +1,5 @@
 #!/usr/bin/env bash
 
-###################################################################
-# Script Name : qrz_lookup.sh
-# Description : This script performs a callsign lookup using qrz.com's API.
-# Author      : Paul Duran
-# Date        : 2025-11-07
-# Version     : 1.0
-# Usage       : ./qrz_lookup.sh <callsign> [--csv|--json]
-###################################################################
-
-# hi
-
 set -euo pipefail
 
 SESSION_FILE="./.qrz_session"
@@ -19,17 +8,11 @@ SESSION_LIFETIME_MINUTES=60   # Typical QRZ session timeout
 # --- Helper: check if session key is valid ---
 check_session_valid() {
   local session_key=$1
-  # Try a harmless lookup to see if it returns an error
   local response
   response=$(curl -sSL "https://xmldata.qrz.com/xml/current/?s=${session_key};callsign=TEST")
-  echo "here 1" >&2
   if echo "$response" | grep -q "<Error>Invalid session key"; then
     return 1
   fi
-  #if echo "$response" | grep -q "<Error>"; then
-   # return 1
-  #fi
-  # If XML contains <QRZDatabase>, assume valid
   echo "$response" | grep -q "Not found: TEST"
 }
 
@@ -45,13 +28,11 @@ get_new_session() {
     -A "qrz-cli/1.0" \
     "https://xmldata.qrz.com/xml/current/")
   session=$(printf '%s' "$login_xml" | sed -n 's:.*<Key>\(.*\)</Key>.*:\1:p' | tr -d '\r\n' | head -n1)
-echo "here 2" >&2
   if [ -z "$session" ]; then
     echo "❌ Failed to get session key. Server response:"
     echo "$login_xml"
     exit 1
   fi
-
   echo "$session" > "$SESSION_FILE"
   touch -m "$SESSION_FILE"
   echo "🔑 Got new session key: $session"
@@ -68,7 +49,7 @@ get_session() {
       printf "🕐 Checking cached session key...\n" >&2
       if check_session_valid "$cached_key"; then
         printf "✅ Using cached session key: $cached_key\n" >&2
-        echo "$cached_key"   # 👈 This is the “return value”
+        echo "$cached_key"
         return 0
       else
         echo "⚠️ Cached session key invalid or expired." >&2
@@ -78,7 +59,6 @@ get_session() {
     fi
   fi
 
-  # If not valid, get a new one and echo that
   get_new_session
 }
 
@@ -92,71 +72,42 @@ perform_lookup() {
     --data-urlencode "s=${session}" \
     --data-urlencode "callsign=${callsign}" \
     "https://xmldata.qrz.com/xml/current/")
-  
-  # Optional debug
-  # echo "DEBUG XML:" >&2
-  # echo "$call_xml" >&2
 
-  # --- Extract fields ---
-  local call fname name addr state country
-  call=$(printf '%s' "$call_xml" | sed -n 's:.*<call>\(.*\)</call>.*:\1:p' | head -n1)
-  fname=$(printf '%s' "$call_xml" | sed -n 's:.*<fname>\(.*\)</fname>.*:\1:p' | head -n1)
-  name=$(printf '%s' "$call_xml" | sed -n 's:.*<name>\(.*\)</name>.*:\1:p' | head -n1)
-  addr=$(printf '%s' "$call_xml" | sed -n 's:.*<addr2>\(.*\)</addr2>.*:\1:p' | head -n1)
-  state=$(printf '%s' "$call_xml" | sed -n 's:.*<state>\(.*\)</state>.*:\1:p' | head -n1)
-  country=$(printf '%s' "$call_xml" | sed -n 's:.*<country>\(.*\)</country>.*:\1:p' | head -n1)
+  # --- Extract fields (global variables) ---
+  CALL=$(printf '%s' "$call_xml" | sed -n 's:.*<call>\(.*\)</call>.*:\1:p' | head -n1)
+  FNAME=$(printf '%s' "$call_xml" | sed -n 's:.*<fname>\(.*\)</fname>.*:\1:p' | head -n1)
+  NAME=$(printf '%s' "$call_xml" | sed -n 's:.*<name>\(.*\)</name>.*:\1:p' | head -n1)
+  ADDR=$(printf '%s' "$call_xml" | sed -n 's:.*<addr2>\(.*\)</addr2>.*:\1:p' | head -n1)
+  STATE=$(printf '%s' "$call_xml" | sed -n 's:.*<state>\(.*\)</state>.*:\1:p' | head -n1)
+  COUNTRY=$(printf '%s' "$call_xml" | sed -n 's:.*<country>\(.*\)</country>.*:\1:p' | head -n1)
 
   # --- Print result ---
   echo
   echo "📡 Callsign lookup result:"
-  echo "  Call:     $call"
-  echo "  Name:     $fname $name"
-  echo "  Location: $addr, $state"
-  echo "  Country:  $country"
+  echo "  Call:     $CALL"
+  echo "  Name:     $FNAME $NAME"
+  echo "  Location: $ADDR, $STATE"
+  echo "  Country:  $COUNTRY"
   echo
 }
 
-# --- MAIN SCRIPT ---
-
-if [ $# -lt 1 ]; then
-  echo "Usage: $0 CALLSIGN [--csv]"
-  echo "Example: $0 N8CUB --csv"
-  exit 1
-fi
-
-CALLSIGN=$(echo "$1" | tr '[:lower:]' '[:upper:]')
-EXPORT_CSV=${2:-}
-
-SESSION=$(get_session)
-
-# Perform the callsign lookup
-perform_lookup "$SESSION" "$CALLSIGN"
-
-# --- END OF MAIN SCRIPT ---
-
-
-
-
-# --- Optional Unified CSV export ---
-if [ "$EXPORT_CSV" = "--csv" ]; then
-  CSV_FILE="${CSV_FILE:-qrz_callsigns.csv}"
-  # Write header only if file doesn’t exist yet
-  if [ ! -f "$CSV_FILE" ]; then
-    printf "call,fname,name,addr,state,country,timestamp\n" > "$CSV_FILE"
-  fi
+# --- Helper: export to CSV ---
+export_csv() {
+  local csv_file="${CSV_FILE:-qrz_callsigns.csv}"
+  [ ! -f "$csv_file" ] && printf "call,fname,name,addr,state,country,timestamp\n" > "$csv_file"
+  local timestamp
   timestamp=$(date +'%Y-%m-%d %H:%M:%S')
   printf '"%s","%s","%s","%s","%s","%s","%s"\n' \
-    "$CALL" "$FNAME" "$NAME" "$ADDR" "$STATE" "$COUNTRY" "$timestamp" >> "$CSV_FILE"
-  echo "💾 Appended to $CSV_FILE"
-fi
+    "$CALL" "$FNAME" "$NAME" "$ADDR" "$STATE" "$COUNTRY" "$timestamp" >> "$csv_file"
+  echo "💾 Appended to $csv_file"
+}
 
-# --- Optional Unified JSON export ---
-if [ "$EXPORT_CSV" = "--json" ]; then
-  JSON_FILE="${JSON_FILE:-qrz_callsigns.json}"
-
-  # Create a temporary JSON object for this record
-  NEW_ENTRY=$(mktemp)
-  cat <<EOF > "$NEW_ENTRY"
+# --- Helper: export to JSON ---
+export_json() {
+  local json_file="${JSON_FILE:-qrz_callsigns.json}"
+  local new_entry
+  new_entry=$(mktemp)
+  cat <<EOF > "$new_entry"
 {
   "call": "$CALL",
   "fname": "$FNAME",
@@ -168,25 +119,54 @@ if [ "$EXPORT_CSV" = "--json" ]; then
 }
 EOF
 
-  # If file doesn't exist or is empty, start a new JSON array
-  if [ ! -s "$JSON_FILE" ]; then
-    echo "[" > "$JSON_FILE"
-    cat "$NEW_ENTRY" >> "$JSON_FILE"
-    echo "]" >> "$JSON_FILE"
+  if [ ! -s "$json_file" ]; then
+    echo "[" > "$json_file"
+    cat "$new_entry" >> "$json_file"
+    echo "]" >> "$json_file"
   else
-    # Ensure JSON_FILE contains a valid array, even if damaged
-    if ! jq empty "$JSON_FILE" >/dev/null 2>&1; then
+    if ! jq empty "$json_file" >/dev/null 2>&1; then
       echo "⚠️  Warning: fixing invalid JSON file."
-      echo "[" > "$JSON_FILE"
-      cat "$NEW_ENTRY" >> "$JSON_FILE"
-      echo "]" >> "$JSON_FILE"
+      echo "[" > "$json_file"
+      cat "$new_entry" >> "$json_file"
+      echo "]" >> "$json_file"
     else
-      # Append safely using jq
-      jq --slurpfile new "$NEW_ENTRY" '. + $new' "$JSON_FILE" > "${JSON_FILE}.tmp" && mv "${JSON_FILE}.tmp" "$JSON_FILE"
+      jq --slurpfile new "$new_entry" '. + $new' "$json_file" > "${json_file}.tmp" && mv "${json_file}.tmp" "$json_file"
     fi
   fi
+  rm -f "$new_entry"
+  echo "💾 Appended to $json_file"
+}
 
-  rm -f "$NEW_ENTRY"
-  echo "💾 Appended to $JSON_FILE"
+# --- MAIN SCRIPT ---
+
+if [ $# -lt 1 ]; then
+  echo "Usage: $0 CALLSIGN [--csv|--json]"
+  echo "Example: $0 N8CUB --csv"
+  exit 1
 fi
 
+CALLSIGN=$(echo "$1" | tr '[:lower:]' '[:upper:]')
+EXPORT_OPTION=${2:-}
+
+SESSION=$(get_session)
+
+perform_lookup "$SESSION" "$CALLSIGN"
+
+case "$EXPORT_OPTION" in
+  --csv)  
+    export_csv
+    ;;
+  --json) 
+    export_json
+    ;;
+  --both|--csvjson)
+    export_csv
+    export_json
+    ;;
+  "")
+    # No export requested
+    ;;
+  *)
+    echo "⚠️ Unknown export option: $EXPORT_OPTION"
+    ;;
+esac
