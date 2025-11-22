@@ -11,7 +11,7 @@
 
 set -euo pipefail
 
-SESSION_FILE="$HOME/.qrz_session"
+SESSION_FILE="./.qrz_session"
 SESSION_LIFETIME_MINUTES=60   # Typical QRZ session timeout
 
 # --- Helper: check if session key is valid ---
@@ -80,6 +80,40 @@ get_session() {
   get_new_session
 }
 
+# --- Helper: perform a callsign lookup ---
+perform_lookup() {
+  local session=$1
+  local callsign=$2
+
+  local call_xml
+  call_xml=$(curl -sSL -G \
+    --data-urlencode "s=${session}" \
+    --data-urlencode "callsign=${callsign}" \
+    "https://xmldata.qrz.com/xml/current/")
+  
+  # Optional debug
+  # echo "DEBUG XML:" >&2
+  # echo "$call_xml" >&2
+
+  # --- Extract fields ---
+  local call fname name addr state country
+  call=$(printf '%s' "$call_xml" | sed -n 's:.*<call>\(.*\)</call>.*:\1:p' | head -n1)
+  fname=$(printf '%s' "$call_xml" | sed -n 's:.*<fname>\(.*\)</fname>.*:\1:p' | head -n1)
+  name=$(printf '%s' "$call_xml" | sed -n 's:.*<name>\(.*\)</name>.*:\1:p' | head -n1)
+  addr=$(printf '%s' "$call_xml" | sed -n 's:.*<addr2>\(.*\)</addr2>.*:\1:p' | head -n1)
+  state=$(printf '%s' "$call_xml" | sed -n 's:.*<state>\(.*\)</state>.*:\1:p' | head -n1)
+  country=$(printf '%s' "$call_xml" | sed -n 's:.*<country>\(.*\)</country>.*:\1:p' | head -n1)
+
+  # --- Print result ---
+  echo
+  echo "📡 Callsign lookup result:"
+  echo "  Call:     $call"
+  echo "  Name:     $fname $name"
+  echo "  Location: $addr, $state"
+  echo "  Country:  $country"
+  echo
+}
+
 # --- MAIN SCRIPT ---
 
 if [ $# -lt 1 ]; then
@@ -93,28 +127,12 @@ EXPORT_CSV=${2:-}
 
 SESSION=$(get_session)
 
-# --- Perform lookup ---
+# Perform the callsign lookup
+perform_lookup "$SESSION" "$CALLSIGN"
 
-CALL_XML=$(curl -sSL -G \
-  --data-urlencode "s=${SESSION}" \
-  --data-urlencode "callsign=${CALLSIGN}" \
-  "https://xmldata.qrz.com/xml/current/")
-echo "here 3" >&2
-# --- Extract fields ---
-CALL=$(printf '%s' "$CALL_XML" | sed -n 's:.*<call>\(.*\)</call>.*:\1:p' | head -n1)
-FNAME=$(printf '%s' "$CALL_XML" | sed -n 's:.*<fname>\(.*\)</fname>.*:\1:p' | head -n1)
-NAME=$(printf '%s' "$CALL_XML" | sed -n 's:.*<name>\(.*\)</name>.*:\1:p' | head -n1)
-ADDR=$(printf '%s' "$CALL_XML" | sed -n 's:.*<addr2>\(.*\)</addr2>.*:\1:p' | head -n1)
-STATE=$(printf '%s' "$CALL_XML" | sed -n 's:.*<state>\(.*\)</state>.*:\1:p' | head -n1)
-COUNTRY=$(printf '%s' "$CALL_XML" | sed -n 's:.*<country>\(.*\)</country>.*:\1:p' | head -n1)
+# --- END OF MAIN SCRIPT ---
 
-echo
-echo "📡 Callsign lookup result:"
-echo "  Call:     $CALL"
-echo "  Name:     $FNAME $NAME"
-echo "  Location: $ADDR, $STATE"
-echo "  Country:  $COUNTRY"
-echo
+
 
 
 # --- Optional Unified CSV export ---
