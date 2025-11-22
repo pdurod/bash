@@ -73,6 +73,12 @@ perform_lookup() {
     --data-urlencode "callsign=${callsign}" \
     "https://xmldata.qrz.com/xml/current/")
 
+ # Check for <Error> in the XML; quit if found
+  if echo "$call_xml" | grep -q "<Error>"; then
+    echo "❌ Grabbed new QRZ session. Exiting." >&2
+    exit 1
+  fi
+
   # --- Extract fields (global variables) ---
   CALL=$(printf '%s' "$call_xml" | sed -n 's:.*<call>\(.*\)</call>.*:\1:p' | head -n1)
   FNAME=$(printf '%s' "$call_xml" | sed -n 's:.*<fname>\(.*\)</fname>.*:\1:p' | head -n1)
