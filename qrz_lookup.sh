@@ -41,7 +41,8 @@ get_new_session() {
 # --- Helper: get current session key (cached or new) ---
 get_session() {
   if [ -f "$SESSION_FILE" ]; then
-    local file_age_mins=$(( ( $(date +%s) - $(stat -f %m "$SESSION_FILE") ) / 60 ))
+    local file_age_mins=$(( ( $(date +%s) - $(get_mtime "$SESSION_FILE") ) / 60 ))
+    #local file_age_mins=$(( ( $(date +%s) - $(stat -f %m "$SESSION_FILE") ) / 60 ))
     local cached_key
     cached_key=$(tr -d '\r\n' < "$SESSION_FILE")
 
@@ -141,6 +142,15 @@ EOF
   fi
   rm -f "$new_entry"
   echo "💾 Appended to $json_file"
+}
+
+# --- Helper: cross-platform stat mtime ---
+get_mtime() {
+  if stat --version >/dev/null 2>&1; then
+    stat -c %Y "$1"        # Linux (GNU)
+  else
+    stat -f %m "$1"        # macOS (BSD)
+  fi
 }
 
 # --- MAIN SCRIPT ---
