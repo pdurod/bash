@@ -1,5 +1,14 @@
 #!/usr/bin/env bash
 
+###################################################################
+# Script Name : qrz_lookup.sh
+# Description : This script performs a callsign lookup using qrz.com's API.
+# Author      : Paul Duran
+# Date        : 2025-11-07
+# Version     : 1.0
+# Usage       : ./qrz_lookup.sh CALLSIGN [--csv|--json|--both]"
+###################################################################
+
 set -euo pipefail
 
 SESSION_FILE="./.qrz_session"
