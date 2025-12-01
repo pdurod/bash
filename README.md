@@ -6,17 +6,14 @@ This tool is ideal for amateur radio operators who want fast, local command-line
 
 ⸻
 
-🔧 Features
-	•	🔑 Automatic QRZ session caching
-	•	Sessions stored for 60 minutes
-	•	Automatically refreshes expired or invalid sessions
-	•	🔍 Callsign lookup via QRZ XML API
-	•	📦 Export results to CSV or JSON
-	•	🛠️ Cross-platform compatible (macOS & Linux)
-	•	🎯 Error handling for invalid or expired sessions
-	•	🗂️ Maintains growing log files:
-	•	qrz_callsigns.csv
-	•	qrz_callsigns.json
+## ✨ Features
+
+- 🔍 **Instant callsign lookup** using the QRZ XML API
+- 💾 **Export results** to CSV, JSON, or both formats
+- 🧹 **Duplicate prevention** when appending to files
+- 🛠️ **Lightweight script** — requires only curl and jq
+- 📦 **Minimal setup** and easy to integrate into other tools
+- 🖥️ **macOS + Linux compatible**
 
 ⸻
 
