@@ -1,4 +1,4 @@
-📡 qrz_lookup.sh
+## 📡 qrz_lookup.sh
 
 A lightweight Bash script that performs ham radio callsign lookups using the QRZ XML API, with automatic session caching and optional CSV/JSON export.
 
