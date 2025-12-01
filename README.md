@@ -33,7 +33,7 @@ git clone https://github.com/yourusername/qrz-lookup.git
 cd qrz-lookup
 chmod +x qrz_lookup.sh
 
-🔑 QRZ Login Setup
+## 🔑 QRZ Login Setup
 
 The first time you run the script — or when your session expires — it will ask for:
 
