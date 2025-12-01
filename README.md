@@ -55,10 +55,8 @@ Example:
 
 ⭐ Export Options
 
-+----------------------+-----------------------------------------------+
-| Option               | Description                                   |
-+----------------------+-----------------------------------------------+
-| --csv                | Append lookup to qrz_callsigns.csv            |
-| --json               | Append lookup to qrz_callsigns.json           |
-| --both / --csvjson   | Export to both CSV and JSON                   |
-+----------------------+-----------------------------------------------+
+| Option             | Description                         |
+|--------------------|-------------------------------------|
+| --csv              | Append lookup to qrz_callsigns.csv  |
+| --json             | Append lookup to qrz_callsigns.json |
+| --both / --csvjson | Export to both CSV and JSON         |
