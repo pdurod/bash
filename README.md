@@ -17,13 +17,13 @@ This tool is ideal for amateur radio operators who want fast, local command-line
 
 ⸻
 
-📥 Requirements
+## 📦 Requirements
 
-qrz_lookup.sh requires:
-	•	bash (compatible with macOS or Linux)
-	•	curl
-	•	jq (only required for --json support)
-	•	A QRZ.com XML API subscription (required to get a session key)
+- 🖥️ **macOS or Linux**
+- 🐚 **bash shell**
+- 🌐 **curl** — used for API requests
+- 🧩 **jq** — required for JSON parsing
+- 📡 **Internet connection** for QRZ lookups
 
 ⸻
 
