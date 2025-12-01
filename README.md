@@ -27,7 +27,7 @@ This tool is ideal for amateur radio operators who want fast, local command-line
 
 ⸻
 
-🚀 Installation
+## 🚀 Installation
 
 git clone https://github.com/yourusername/qrz-lookup.git
 cd qrz-lookup
