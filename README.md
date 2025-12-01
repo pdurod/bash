@@ -27,11 +27,8 @@ This tool is ideal for amateur radio operators who want fast, local command-line
 
 ⸻
 
-## Installation
+🚀 Installation
 
-Clone the repository, navigate into it, and make the script executable:
-
-```bash
 git clone https://github.com/yourusername/qrz-lookup.git
 cd qrz-lookup
 chmod +x qrz_lookup.sh
