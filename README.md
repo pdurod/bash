@@ -29,9 +29,9 @@ This tool is ideal for amateur radio operators who want fast, local command-line
 
 ## 🚀 Installation
 
-git clone https://github.com/yourusername/qrz-lookup.git
-cd qrz-lookup
-chmod +x qrz_lookup.sh
+- git clone https://github.com/yourusername/qrz-lookup.git
+- cd qrz-lookup
+- chmod +x qrz_lookup.sh
 
 ## 🔑 QRZ Login Setup
 
