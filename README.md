@@ -3,8 +3,6 @@
 - A lightweight Bash script that performs ham radio callsign lookups using the QRZ XML API, with automatic session caching and optional CSV/JSON export.
 - This tool is ideal for amateur radio operators who want fast, local command-line lookups without needing a browser.
 
-⸻
-
 ## ✨ Features
 
 - 🔍 **Instant callsign lookup** using the QRZ XML API
@@ -14,8 +12,6 @@
 - 📦 **Minimal setup** and easy to integrate into other tools
 - 🖥️ **macOS + Linux compatible**
 
-⸻
-
 ## 📦 Requirements
 
 - 🖥️ **macOS or Linux**
@@ -23,8 +19,6 @@
 - 🌐 **curl** — used for API requests
 - 🧩 **jq** — required for JSON parsing
 - 📡 **Internet connection** for QRZ lookups
-
-⸻
 
 ## 🚀 Installation
 
