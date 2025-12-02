@@ -37,8 +37,8 @@ This tool is ideal for amateur radio operators who want fast, local command-line
 
 The first time you run the script — or when your session expires — it will ask for:
 
-QRZ username:
-QRZ password:
+- QRZ username:
+- QRZ password:
 
 The script securely stores only the temporary session key in a local file:
 
